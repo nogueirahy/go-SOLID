@@ -1,4 +1,4 @@
-package main
+package isp
 
 import "fmt"
 
@@ -10,92 +10,94 @@ Clientes não devem ser forçados a depender de métodos que não usam.
 Devemos criar interfaces mais específicas do que uma genérica.
 */
 
-type Payment struct {
-	value float64
+// Device interface exige que todos os dispositivos implementem todos esses métodos.
+type Device interface {
+	TurnOn()
+	TurnOff()
+	SetTimer(int)
+	ConnectToBluetooth()
 }
 
-func (p Payment) TransferPix() string {
-	return "transferPix..."
+// Lamp é um dispositivo simples que apenas liga e desliga.
+type Lamp struct{}
+
+func (l Lamp) TurnOn() {
+	fmt.Println("Lamp turned on")
 }
 
-func (p Payment) TransferTed() string {
-	return "transferTed..."
+func (l Lamp) TurnOff() {
+	fmt.Println("Lamp turned off")
 }
 
-func (p Payment) TransferBroker() string {
-	return "transferBroker..."
+// SetTimer e ConnectToBluetooth são métodos desnecessários para uma lâmpada.
+func (l Lamp) SetTimer(t int) {
+	fmt.Println("Setting timer not supported")
 }
 
-type Transaction interface {
-	TransferPix() string
-	TransferTed() string
-	TransferBroker() string
-}
-
-func CheckingAccount(t Transaction) {
-	fmt.Println("CheckingAccount")
-	t.TransferPix()
-	t.TransferTed()
-	t.TransferBroker()
-}
-
-func SavingAccount(t Transaction) {
-	fmt.Println("SavingAccount")
-	t.TransferPix()
-	t.TransferTed()
-
-	// Quebra do Princípio
-	// A assinatura t.TransferBroker fica disponivel mais ela não deve ser usado.
+func (l Lamp) ConnectToBluetooth() {
+	fmt.Println("Bluetooth not supported")
 }
 
 /*
-Solução:
-
-Vamos aplicar o princípio de segregação de interface à nossa
-função SavingAccount, tornando ela mais específica em termos de seus requisitos.
-Ela só precisa de algo que seja específico.
-
+	Para resolver esse problema e seguir o ISP,
+	podemos dividir a interface Device em interfaces
+	 menores e mais específicas que melhor correspondam
+	 às capacidades de cada dispositivo
 */
 
-type Payment2 struct {
-	value float64
+// BasicDevice apenas para dispositivos que ligam e desligam.
+type BasicDevice interface {
+	TurnOn()
+	TurnOff()
 }
 
-func (p Payment2) TransferPix2() string {
-	return "transferPix..."
+// ProgrammableDevice para dispositivos que podem ser programados com um timer.
+type ProgrammableDevice interface {
+	BasicDevice
+	SetTimer(int)
 }
 
-func (p Payment2) TransferTed2() string {
-	return "transferTed..."
+// BluetoothCapable para dispositivos que suportam conexão Bluetooth.
+type BluetoothCapable interface {
+	BasicDevice
+	ConnectToBluetooth()
 }
 
-func (p Payment2) TransferBroker2() string {
-	return "transferBroker..."
+// Lamp agora implementa apenas a interface BasicDevice.
+type NLamp struct{}
+
+func (l NLamp) TurnOn() {
+	fmt.Println("Lamp turned on")
 }
 
-type Transaction2 interface {
-	TransferPix() string
-	TransferTed() string
+func (l NLamp) TurnOff() {
+	fmt.Println("Lamp turned off")
 }
 
-type TransactionInvestment interface {
-	TransferBroker() string
+// SmartSpeaker implementa BasicDevice e BluetoothCapable.
+type SmartSpeaker struct{}
+
+func (s SmartSpeaker) TurnOn() {
+	fmt.Println("Speaker turned on")
 }
 
-type InvestmentTransaction interface {
-	Transaction2
-	TransferBroker() string
+func (s SmartSpeaker) TurnOff() {
+	fmt.Println("Speaker turned off")
 }
 
-func CheckingAccount2(i InvestmentTransaction) {
-	fmt.Println("CheckingAccount")
-	i.TransferPix()
-	i.TransferTed()
-	i.TransferBroker()
+func (s SmartSpeaker) ConnectToBluetooth() {
+	fmt.Println("Connecting to Bluetooth")
 }
 
-func SavingAccount2(t Transaction2) {
-	fmt.Println("SavingAccount")
-	t.TransferPix()
-	t.TransferTed()
+/*
+func main() {
+	var lamp BasicDevice = NLamp{}
+	lamp.TurnOn()
+	lamp.TurnOff()
+
+	var speaker BluetoothCapable = SmartSpeaker{}
+	speaker.TurnOn()
+	speaker.TurnOff()
+	speaker.ConnectToBluetooth()
 }
+*/

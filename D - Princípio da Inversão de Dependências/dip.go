@@ -46,7 +46,7 @@ Nesse exemplo conseguimos ver todos os principios do SOLID e um pouco do Clean A
 
 */
 
-//Domain Layer
+// Domain Layer
 type PaymentEntity struct {
 	value float64
 }
@@ -59,7 +59,7 @@ type ITransactionBrokerAccountUseCase interface {
 	execute(p PaymentEntity)
 }
 
-//Data Layer
+// Data Layer
 type TransactionService struct {
 	apiXptoClient IApiXptoClient
 }
@@ -69,7 +69,7 @@ func (service TransactionService) execute(p PaymentEntity) {
 	service.apiXptoClient.executeTransactionValue(payload)
 }
 
-//Infra Layer
+// Infra Layer
 type ClientHttp struct{}
 
 func (c *ClientHttp) Post(params any) {
@@ -88,7 +88,7 @@ func (client ClientHttp) executeTransactionValue(r TransactionBrokerRequest) {
 	client.Post(r)
 }
 
-//Presenter layer
+// Presenter layer
 type PresenterTransactionBroker struct {
 	transactionBrokerAccount ITransactionBrokerAccountUseCase
 }

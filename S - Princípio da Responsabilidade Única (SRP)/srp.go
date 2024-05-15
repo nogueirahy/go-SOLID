@@ -1,5 +1,7 @@
 package srp
 
+import "fmt"
+
 /*
 
 Single Responsiblity Principle (Princípio da responsabilidade única)
@@ -10,16 +12,25 @@ A class/função/package/componente é especializada em um único assunto.
 
 */
 
-type BankAccount struct{}
-
-func (b *BankAccount) PrintAccount() {}
-
-func (b *BankAccount) ValidateAccount() {
-	//Crucial business logic.
+// BankAccount viola o SRP por conter múltiplas responsabilidades.
+type BankAccount struct {
+	AccountNumber string
+	Balance       float64
 }
 
+// PrintAccount imprime os detalhes da conta, uma responsabilidade que não deveria estar em uma classe de domínio.
+func (b *BankAccount) PrintAccount() {
+	fmt.Printf("Account Number: %s, Balance: $%.2f\n", b.AccountNumber, b.Balance)
+}
+
+// ValidateAccount verifica a validade dos dados da conta.
+func (b *BankAccount) ValidateAccount() bool {
+	return b.AccountNumber != "" && b.Balance >= 0
+}
+
+// Save salva os dados da conta no banco de dados, misturando persistência de dados com a lógica de negócios.
 func (b *BankAccount) Save() {
-	println("Saving data into Database...")
+	fmt.Println("Saving data to the database...")
 }
 
 /*
@@ -33,24 +44,29 @@ BankAccount não deve chamar diretamente Save, pois não faz parte do dominio de
 
 */
 
+// BankAccount apenas contém dados relacionados à conta.
+type SBankAccount struct {
+	AccountNumber string
+	Balance       float64
+}
+
+// AccountValidator fornece métodos para validar dados da conta.
+type AccountValidator struct{}
+
+func (v *AccountValidator) ValidateAccount(b *BankAccount) bool {
+	return b.AccountNumber != "" && b.Balance >= 0
+}
+
+// BankAccountRepository responsável pela persistência de dados da conta.
 type BankAccountRepository struct{}
 
-func (b *BankAccountRepository) Save() {
-	println("Saving data into Database...")
+func (r *BankAccountRepository) Save(b *SBankAccount) {
+	fmt.Println("Saving account data to the database...")
 }
 
-type BankAccount2 struct {
-	repository BankAccountRepository
+// AccountPrinter responsável por imprimir detalhes da conta.
+type AccountPrinter struct{}
+
+func (p *AccountPrinter) PrintAccount(b *BankAccount) {
+	fmt.Printf("Account Number: %s, Balance: $%.2f\n", b.AccountNumber, b.Balance)
 }
-
-func (b *BankAccount2) ValidateAccount() {
-	//Crucial business logic.
-}
-
-func (b *BankAccount2) Save() {
-	b.repository.Save()
-}
-
-type BankViewer struct{}
-
-func (b *BankViewer) PrintAccount() {}

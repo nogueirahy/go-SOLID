@@ -1,4 +1,4 @@
-package main
+package ocp
 
 import (
 	"fmt"
@@ -14,26 +14,22 @@ import (
 
 */
 
+// Payment representa a forma de pagamento mas viola o princípio OCP.
 type Payment struct {
 	value    float64
-	cashback float64 // Quebra do Princípio adicionando uma nova prop a struct.
-
+	cashback float64 // Inclusão inadequada segundo OCP, pois modifica a estrutura.
 }
 
+// Métodos que modificam diretamente a estrutura Payment
 func (p *Payment) payCreditCard(value float64) {
-	fmt.Println("payCreditCard...")
+	fmt.Println("payCreditCredit...")
 }
 
 func (p *Payment) payTicket() {
 	fmt.Println("payTicket...")
-
 }
 
-// Nova demanda de negócio, precisamos adiconar pagamento
-// para cripto e adicionar cashback
-
-// Quebra do Princípio
-// Estamos gerando um novo método para lugares onde não usa esse meio de pagamento...
+// payCrypto adiciona funcionalidade de forma invasiva, violando OCP.
 func (p *Payment) payCrypto() {
 	p.cashback = 5
 	fmt.Println("payCrypto...")
@@ -51,12 +47,14 @@ Solução:
 
 */
 
-type Payment2 struct {
+// NPayment serve como a base para todos os tipos de pagamento, fechado para modificação.
+type NPayment struct {
 	value float64
 }
 
+// Interfaces e métodos que executam funcionalidades.
 type PaymentCreditCard struct {
-	Payment2
+	NPayment
 }
 
 func (p PaymentCreditCard) execute() {
@@ -65,7 +63,7 @@ func (p PaymentCreditCard) execute() {
 }
 
 type PaymentTicket struct {
-	Payment2
+	NPayment
 }
 
 func (p PaymentTicket) execute() {
@@ -74,7 +72,7 @@ func (p PaymentTicket) execute() {
 }
 
 type PaymentCrypto struct {
-	Payment2
+	NPayment
 	cashback float64
 }
 
@@ -83,9 +81,9 @@ func (p PaymentCrypto) execute() {
 	p.cashback = 0.80
 	fmt.Println("PayCrypto...", p.value)
 	fmt.Println("PayCrypto... Cashback", p.cashback)
-
 }
 
+/*
 func main() {
 	var paymentCreditCard PaymentCreditCard
 	paymentCreditCard.execute()
@@ -96,3 +94,4 @@ func main() {
 	var paymenyCrypto PaymentCrypto
 	paymenyCrypto.execute()
 }
+*/
